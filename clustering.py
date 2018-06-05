@@ -8,9 +8,8 @@ Created on Tue May 22 17:27:36 2018
 import pandas as pd
 import numpy as np
 from sklearn.cluster import DBSCAN
-import geopy.distance as dist
 
-locations = pd.read_csv('./locations/data/locations.csv')
+locations = pd.read_csv('./locations.csv')
 
 
 #Subsetting with a single user
@@ -27,4 +26,7 @@ def cluster(locations):
     coordinates = locations[['latitude','longitude']]
     db = DBSCAN(eps = 0.1, min_samples = 5).fit(coordinates)
     coordinates['cluster'] = db.labels_
+    clusters = coordinates.groupby('cluster').agg([np.mean, np.size])
+    clusters.columns = ['latitude', 'density0', 'longitude', 'density']
+    print(clusters.drop(columns = 'density0'))
     
