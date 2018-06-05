@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu May 24 15:44:00 2018
+
+@author: AveryMavroudis
+"""
+import pandas as pd
+from sklearn.cluster import MeanShift, DBSCAN
+import matplotlib.pyplot as plt
+import numpy as np
+
+locations = pd.read_csv("./locations/data/locations.csv")
+idLocations = {id : coordinates
+               for id, coordinates in locations.groupby(['id'])
+                   }
+samp1 = idLocations[53535][['latitude','longitude']]
+#MeanShift
+ms = MeanShift().fit(samp1)
+centers = ms.cluster_centers_
+
+
+#DBSCAN
+db = DBSCAN(eps = 0.1, min_samples = 5).fit(samp1)
+samp1['cluster'] = db.labels_
+samp1Clusters = samp1.groupby('cluster').agg([np.mean, np.size])
+samp1Clusters.columns = ['latitude','size0','longitude','size']
+samp1Clusters.drop(columns = 'size0')
+
+
+#Comparison Plot
+plt.scatter(samp1['latitude'], samp1['longitude'], c = 'r')
+plt.scatter(*zip(*centers), c = 'b')
+plt.scatter(samp1Clusters['latitude'], samp1Clusters['longitude'], c = 'g')
+
