@@ -28,5 +28,16 @@ def cluster(locations):
     coordinates['cluster'] = db.labels_
     clusters = coordinates.groupby('cluster').agg([np.mean, np.size])
     clusters.columns = ['latitude', 'density0', 'longitude', 'density']
-    print(clusters.drop(columns = 'density0'))
+    clusters = clusters.drop(columns = 'density0')
+    return clusters
+    
+def locations_csv(data, file_name = ""):
+    by_ID = data.groupby('id')
+    all_clusters = by_ID.apply(cluster)
+    all_clusters = all_clusters.reset_index(level = ['id','cluster'])
+    outliers_rm = all_clusters.drop(all_clusters[all_clusters.cluster == -1].index)
+    max_cluster = outliers_rm.groupby('id').apply(max)
+    locations = max_cluster.drop(columns = 'cluster')
+    locations.to_csv(file_name, index = False)
+    
     
